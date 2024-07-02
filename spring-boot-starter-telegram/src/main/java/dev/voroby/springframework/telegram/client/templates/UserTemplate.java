@@ -3,7 +3,9 @@ package dev.voroby.springframework.telegram.client.templates;
 import dev.voroby.springframework.telegram.client.TdApi;
 import dev.voroby.springframework.telegram.client.TelegramClient;
 import dev.voroby.springframework.telegram.client.templates.response.Response;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -113,7 +115,23 @@ public class UserTemplate {
         Objects.requireNonNull(phoneNumber);
         return telegramClient.sendAsync(new TdApi.SearchUserByPhoneNumber(phoneNumber, false));
     }
-
+    public CompletableFuture<Response<TdApi.Chats>> searchChats(String query) {
+        Objects.requireNonNull(query);
+        TdApi.SearchChats searchChats = new TdApi.SearchChats(query, 2);
+        //TdApi.SearchPublicChats searchPublicChats = (TdApi.SearchPublicChats) searchChats;
+        return telegramClient.sendAsync(searchChats);
+    }
+    public CompletableFuture<Response<TdApi.FoundChatMessages>> searchChatMessages(String chatName, String query) {
+        Objects.requireNonNull(query);
+        Response<TdApi.Chats> chatsResponse = searchChats(chatName).join();
+        long[] chatIds = chatsResponse.object().chatIds;
+        if (CollectionUtils.isEmpty(Collections.singleton(chatIds))) {
+            return null;
+        }
+        TdApi.SearchChatMessages searchChatMessages = new TdApi.SearchChatMessages(
+                chatIds[0], query, null, 0, 0, 1, null, 0, 0);
+        return telegramClient.sendAsync(searchChatMessages);
+    }
     /**
      * Searches a user by username. Returns null if user can't be found.
      *

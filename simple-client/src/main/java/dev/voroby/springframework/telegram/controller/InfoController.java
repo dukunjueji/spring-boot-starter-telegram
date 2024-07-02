@@ -33,13 +33,16 @@ public class InfoController {
         return telegramClient.sendSync(new TdApi.GetMe());
     }
 
-    record Query(String value){}
+    record Query(String value,String chatName){}
 
     @PostMapping(value = "/searchByPhone", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Response<TdApi.User> searchUserByPhone(@RequestBody Query query) {
         return userTemplate.searchUserByPhoneNumber(query.value).join();
     }
-
+    @PostMapping(value = "/searchChatMessages", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Response<TdApi.FoundChatMessages> searchChatMessages(@RequestBody Query query) {
+        return userTemplate.searchChatMessages(query.chatName,query.value).join();
+    }
     @PostMapping(value = "/searchByUsername", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Response<TdApi.User> searchUserByUsername(@RequestBody Query query) {
         return userTemplate.searchUserByUsername(query.value()).join();
